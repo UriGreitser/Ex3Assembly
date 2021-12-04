@@ -1,3 +1,4 @@
+.file "func_select.s"
 .section .rodata
     .align 8
     .Switch:
@@ -32,6 +33,7 @@ run_func:
     #%rsi - the operation
     pushq %rbp
     movq  %rsp, %rbp
+
     leaq -50(%rdx), %r15 #substracts 50 from the operation
     cmpq $10, %r15 #compares 10 with rsi
     ja .CaseDefault #if %rsi is above 10, jumps to default
@@ -46,6 +48,9 @@ run_func:
         movq $formatDefault, %rdi
         movq $0, %rax
         call printf
+        movq %rbp, %rsp
+        popq %rbp
+
          ret
 
          .Case50Or60:
@@ -145,7 +150,7 @@ run_func:
                     leaq 4(%rsp), %rcx
                     movzbq (%rcx), %rcx
                     movl (%rsp), %edx
-                    pop %rbp
+                    pop %r9
                     pop %r9
                     pop %r8
                     popq %rsi
@@ -171,16 +176,15 @@ run_func:
                     add $1, %rdx
                     xor %rax, %rax
                     call printf
-
-
-
-
                     movq %rbp, %rsp
                     popq %rbp
-                    movq $0, %rax
+                    popq %r15
           ret
 
          .Case54:
+         pushq %rbp
+         movq  %rsp, %rbp
+
          push %rsi
          call swapCase
          movq $fomratPrintOf54, %rdi
@@ -202,8 +206,9 @@ run_func:
           xor %rax, %rax
           call printf
 
-
-
+           movq %rbp, %rsp
+           pop %rbp
+           pop %r15
           movq $0, %rax
           ret
 
@@ -214,7 +219,6 @@ run_func:
                     pushq %rsi
                     pushq %r8
                     pushq %r9
-
                     #gets the first number
                     subq  $8, %rsp
                     movq $int_format, %rdi
@@ -232,12 +236,22 @@ run_func:
                     leaq 4(%rsp), %rcx
                     movzbq (%rcx), %rcx
                     movl (%rsp), %edx
-                    pop %rbp
-                    pop %r9
-                    pop %r8
+                    add $8, %rsp
+                    popq %r9
+                    popq %r8
                     popq %rsi
                     popq %rdi
                     call pstrijcmp
+
+                    #prints the compare result
+                    movq $formatPrintOf55, %rdi
+                    movq %rax, %rsi
+                    xor %rax, %rax
+                    call printf
+                    movq %rbp, %rsp
+                    popq %rbp
+                    popq %r15
+
           ret
 
          .Case56:

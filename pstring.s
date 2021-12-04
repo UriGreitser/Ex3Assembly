@@ -1,3 +1,4 @@
+.file "pstring.s"
 .section .rodata
           string_format: .string "%s"
           int_format: .string "%d"
@@ -5,7 +6,7 @@
 
 
 .text
-.globl pstrlen,replaceChar, pstrijcpy, swapCase, pstrijcmp
+.global pstrlen,replaceChar, pstrijcpy, swapCase, pstrijcmp
   .type pstrlen @function
   #First function
 pstrlen:
@@ -44,6 +45,8 @@ addq %rdx, %rdi
 addq %rdx, %rsi
 addq $1, %rdi
 addq $1, %rsi
+addq $-1, %r8
+addq $-1, %r9
 
 .checkInvalid:
 cmpq $0, %rdx
@@ -64,7 +67,6 @@ movb %r15b, (%rdi)
 addq $1, %rdx
 addq $1, %rsi
 addq $1, %rdi
-
 jmp .loop53
 
 .lastIt:
@@ -133,19 +135,70 @@ jmp .loop54
   .type pstrijcmp @function
   #Third function
 pstrijcmp:
-push %rdi
-push %rsi
-push %rdx
-push %rcx
-call pstrijcpy
-movq %rax, %r11
-pop %rcx
-pop %rdx
-pop %rsi
-pop %rdi
-call pstrijcpy
-movq %rax, %r12
-call pstrijcpy
+addq %rdx, %rdi
+addq %rdx, %rsi
+addq $1, %rdi
+addq $1, %rsi
+addq $-1, %r8
+addq $-1, %r9
+
+.checkInvalid55:
+cmpq $0, %rdx
+jb .invalidIndex55
+cmpq %r8, %rcx
+ja .invalidIndex55
+cmpq %r9, %rcx
+ja .invalidIndex55
+xor %rax, %rax
+jmp .loop55
+
+
+.loop55:
+    cmpq %rdx, %rcx
+    je .LastIt55
+    movzbq (%rdi), %r15
+    movzbq (%rsi), %r14
+    cmpb %r15b, %r14b
+    leaq 1(%rdx), %rdx
+    leaq 1(%rdi), %rdi
+    leaq 1(%rsi), %rsi
+    je .loop55
+    ja .secondStringBigger
+    jb .firstStringBigger
+
+.invalidIndex55:
+movq $invalid_format53, %rdi
+xor %rax, %rax
+call printf
+xor %rax, %rax
+movq $-2, %rax
+ret
+
+.LastIt55:
+    movzbq (%rdi), %r15
+    movzbq (%rsi), %r14
+    cmpb %r15b, %r14b
+    je .equalStrings
+    ja .secondStringBigger
+    jb .firstStringBigger
+
+.equalStrings:
+xor %rax, %rax
+movq $0, %rax
+ret
+
+
+.secondStringBigger:
+xor %rax, %rax
+movq $-1, %rax
+ret
+
+
+.firstStringBigger:
+xor %rax, %rax
+movq $1, %rax
+ret
+
 
 
 
